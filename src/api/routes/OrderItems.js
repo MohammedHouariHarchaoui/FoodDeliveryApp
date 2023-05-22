@@ -5,7 +5,6 @@ import {
     createOrderItem,
     updateOrderItem,
     deleteOrderItem,
-    getOrdersItems
 } from '../services/OrderItems.js'
 const router = express.Router();
 
