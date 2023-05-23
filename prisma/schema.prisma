@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  
 }
 
 datasource db {
@@ -8,45 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model user {
-  id Int @id @default(autoincrement())
-  firstname String  @db.VarChar(120)
-  lastname String  @db.VarChar(120)
-  phoneNumber String  @db.VarChar(120)
-  latitude Float
-  longitude Float
-  address String  @db.VarChar(120)
-  password String  @db.VarChar(120)
-  profilPictureUrl String  @db.VarChar(200)
-  email String @unique  @db.VarChar(120)
-  status Int
-  createdAt DateTime @default(now())
+  id               Int      @id @default(autoincrement())
+  firstname        String   @db.VarChar(120)
+  lastname         String   @db.VarChar(120)
+  phoneNumber      String   @db.VarChar(120)
+  latitude         Float
+  longitude        Float
+  address          String   @db.VarChar(120)
+  password         String   @db.VarChar(120)
+  profilPictureUrl String   @db.VarChar(200)
+  email            String   @unique @db.VarChar(120)
+  status           Int
+  createdAt        DateTime @default(now())
 }
 
-
-enum DeliveryStatus{
+enum DeliveryStatus {
   OCCUPED
   AVAILABLE
   OFFSHIFT
 }
 
 model deliveryMan {
-  id Int @id @default(autoincrement())
-  idRestaurant Int
-  firstname String  @db.VarChar(120)
-  lastname String  @db.VarChar(120)
-  phoneNumber String  @db.VarChar(120)
-  profilPictureUrl String  @db.VarChar(200)
-  status DeliveryStatus
-  email String @unique  @db.VarChar(120)
-  latitude Float
-  longitude Float
-  createdAt DateTime @default(now())
+  id               Int            @id @default(autoincrement())
+  idRestaurant     Int
+  firstname        String         @db.VarChar(120)
+  lastname         String         @db.VarChar(120)
+  phoneNumber      String         @db.VarChar(120)
+  profilPictureUrl String         @db.VarChar(200)
+  status           DeliveryStatus
+  email            String         @unique @db.VarChar(120)
+  latitude         Float
+  longitude        Float
+  createdAt        DateTime       @default(now())
 }
-
-
-
 
 enum DayOfWeek {
   MONDAY
@@ -57,7 +51,6 @@ enum DayOfWeek {
   SATURDAY
   SUNDAY
 }
-
 
 enum CuisineType {
   ITALIAN
@@ -70,25 +63,25 @@ enum CuisineType {
   SYRIAN
 }
 
-model Restaurant{
-  id Int @id @default(autoincrement())
-  name String @db.VarChar(120) @unique 
-  description String @db.VarChar(500)
-  logoPictureUrl String @db.VarChar(200)
-  latitude Float 
-  longitude Float
-  address String @db.VarChar(200)
-  cuisineType CuisineType 
-  phoneNumber String
-  openingTime DateTime
-  closingTime DateTime
-  email String @db.VarChar(120) @unique
-  instagram String @db.VarChar(120)
-  facebook String @db.VarChar(120)
-  averageRating Float
+model Restaurant {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique @db.VarChar(120)
+  description     String   @db.VarChar(500)
+  logoPictureUrl  String   @db.VarChar(200)
+  latitude        Float
+  longitude       Float
+  address         String   @db.VarChar(200)
+  cuisineType     String   @db.VarChar(120)
+  phoneNumber     String   @db.VarChar(120)
+  openingTime     String   @db.VarChar(120)
+  closingTime     String   @db.VarChar(120)
+  email           String   @unique @db.VarChar(120)
+  instagram       String   @db.VarChar(120)
+  facebook        String   @db.VarChar(120)
+  averageRating   Float
   numberOfReviews Int
-  deliveryFees Float
-  createdAt DateTime @default(now())
+  deliveryFees    Float
+  createdAt       DateTime @default(now())
 }
 
 enum FoodCategory {
@@ -108,48 +101,47 @@ enum FoodCategory {
   BREAKFAST
 }
 
-
-model Dish{
-  id Int @id @default(autoincrement())
-  idRestaurant Int 
-  price Float 
-  category  FoodCategory
-  description String @db.VarChar(500)
-  image String @db.VarChar(200) 
-  createdAt DateTime @default(now())
+model Dish {
+  id           Int          @id @default(autoincrement())
+  idRestaurant Int
+  price        Float
+  category     FoodCategory
+  description  String       @db.VarChar(500)
+  image        String       @db.VarChar(200)
+  createdAt    DateTime     @default(now())
 }
 
-model Review{
-  id Int @id @default(autoincrement())
-  idRestaurant Int 
-  idUser Int
-  rating Float
-  comment String @db.VarChar(500)
-  createdAt DateTime @default(now())
+model Review {
+  id           Int      @id @default(autoincrement())
+  idRestaurant Int
+  idUser       Int
+  rating       Float
+  comment      String   @db.VarChar(500)
+  createdAt    DateTime @default(now())
 }
 
-
-enum OrderStatus{
+enum OrderStatus {
   PENDING
   DELIVERED
   CANCELED
 }
 
-model Order{
-  id Int @id @default(autoincrement())
-  latitudue Float
-  longitude Float
-  deliveryNote String @db.VarChar(500)
+model Order {
+  id            Int         @id @default(autoincrement())
+  latitudue     Float
+  longitude     Float
+  deliveryNote  String      @db.VarChar(500)
   idDeliveryMan Int
-  status OrderStatus
-  createdAt DateTime @default(now())
+  status        OrderStatus
+  createdAt     DateTime    @default(now())
 }
 
-model OrderItems{
-  idDish Int
-  idOrder Int
-  quantity Int
-  dishNote String @db.VarChar(500)
+model OrderItems {
+  idDish    Int
+  idOrder   Int
+  quantity  Int
+  dishNote  String   @db.VarChar(500)
   createdAt DateTime @default(now())
+
   @@id([idDish, idOrder])
 }

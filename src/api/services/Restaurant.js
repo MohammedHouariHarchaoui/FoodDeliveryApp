@@ -1,6 +1,15 @@
+import formidable from 'formidable';
+import cloudinary from 'cloudinary';
 import { PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient();
+
+cloudinary.v2.config({
+  cloud_name: 'dt4pzi35x',
+  api_key: '349196438397243',
+  api_secret: '_Rto_VZa54y1kfR1_dJSn4wpS2Q',
+});
+
 
 export const getRestaurants = async (req, res) => {
     try {
@@ -29,36 +38,64 @@ export const getRestaurantById = async (req, res) => {
 }
 
 export const createRestaurant = async (req, res) => {
-    const { name, description, logoPictureUrl, latitude, longitude, address, cuisineType, phoneNumber, openingTime, closingTime, email, instagram, facebook, averageRating, numberOfReviews, deliveryFees } = req.body;
-    try {
-        const restaurant = await prisma.restaurant.create({
-            data: {
-                name: name,
-                description: description,
-                logoPictureUrl: logoPictureUrl,
-                latitude: Number(latitude),
-                longitude: Number(longitude),
-                address: address,
-                cuisineType: cuisineType,
-                phoneNumber: phoneNumber,
-                openingTime: openingTime,
-                closingTime: closingTime,
-                email: email,
-                instagram: instagram,
-                facebook: facebook,
-                averageRating: Number(averageRating),
-                numberOfReviews: Number(numberOfReviews),
-                deliveryFees: Number(deliveryFees)
+    const form = formidable({
+        multiples: false,
+        keepExtensions: true,
+        fields: ["name", "description", "latitude", "longitude", "address", "cuisineType", "phoneNumber", "openingTime", "closingTime", "email", "instagram", "facebook", "averageRating", "numberOfReviews", "deliveryFees"],
+        fileFilter: function(req, file, callback) {
+            if (!file.type.startsWith('image/')) {
+              return callback(new Error('Only image files are allowed!'));
             }
-        });
-        res.status(201).json(restaurant);
-    } catch (error) {
-        res.status(400).json({ msg: error.msg });
-    }
+            callback(null, true);
+        }
+    });
+
+    form.parse(req, async (err, fields, files) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('An error occurred while uploading the restaurant image.');
+            return;
+        }
+        try {
+            console.log(files);
+            const result = await cloudinary.v2.uploader.upload(files.image.filepath, {
+                resource_type: 'image',
+                folder: 'restaurants_images',
+            });
+            console.log(result);
+
+            const { name, description, latitude, longitude, address, cuisineType, phoneNumber, openingTime, closingTime, email, instagram, facebook, averageRating, numberOfReviews, deliveryFees } = fields;
+            console.log(fields);
+            const restaurant = await prisma.restaurant.create({
+                data: {
+                    name: name,
+                    description: description,
+                    logoPictureUrl: result.secure_url,
+                    latitude: Number(latitude),
+                    longitude: Number(longitude),
+                    address: address,
+                    cuisineType: cuisineType,
+                    phoneNumber: phoneNumber,
+                    openingTime: openingTime,
+                    closingTime: closingTime,
+                    email: email,
+                    instagram: instagram,
+                    facebook: facebook,
+                    averageRating: Number(averageRating),
+                    numberOfReviews: Number(numberOfReviews),
+                    deliveryFees: Number(deliveryFees)
+                }
+            });
+                    res.status(201).json(restaurant);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('An error occurred while uploading the restaurant image.');
+        }
+    });
 }
 
 export const updateRestaurant = async (req, res) => {
-    const { name, description, logoPictureUrl, latitude, longitude, address, cuisineType, phoneNumber, openingTime, closingTime, email, instagram, facebook, averageRating, numberOfReviews, deliveryFees } = req.body;
+    const { name, description, latitude, longitude, address, cuisineType, phoneNumber, openingTime, closingTime, email, instagram, facebook, averageRating, numberOfReviews, deliveryFees } = req.body;
     try {
         const restaurant = await prisma.restaurant.update({
             where: {
@@ -67,7 +104,6 @@ export const updateRestaurant = async (req, res) => {
             data: {
                 name: name,
                 description: description,
-                logoPictureUrl: logoPictureUrl,
                 latitude: Number(latitude),
                 longitude: Number(longitude),
                 address: address,

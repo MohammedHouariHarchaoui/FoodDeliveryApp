@@ -71,9 +71,9 @@ export const updateOrderItem = async (req , res)=>{
 
 export const deleteOrderItem = async (req , res)=>{
     try {
-        const orderItem = await prisma.orderItems.delete({
+        const orderItem = await prisma.orderItems.deleteMany({
             where:{
-                id:Number(req.params.id)
+                idOrder:Number(req.params.id)
             }
         });
         if (orderItem) {

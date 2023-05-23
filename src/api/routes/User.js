@@ -6,63 +6,102 @@ import { getPassword, getUserByEmail ,createUser, getUser } from "../services/Us
 import jwt from "jsonwebtoken";
 import isUserMidd from "../middlewares/Authentification.js";
 import bcrypt from "bcrypt";
+import formidable from 'formidable';
+import cloudinary from 'cloudinary';
+import { PrismaClient } from "@prisma/client"
+
+const prisma = new PrismaClient();
+
+cloudinary.v2.config({
+  cloud_name: 'dt4pzi35x',
+  api_key: '349196438397243',
+  api_secret: '_Rto_VZa54y1kfR1_dJSn4wpS2Q',
+});
+
+
+import {
+    getUsers,
+    getUserById,
+    updateUser,
+    deleteUser
+} from '../services/UserModels.js'
+
 
 if (process.env.NODE_ENV !== "production") {
     config();
-  }
+}
   
-  const router = Router();
-  
+const router = Router();
   
 
+
+router.get('/',getUsers);
+router.get('/:id',getUserById);
+router.patch('/edit/:id',updateUser);
+router.delete('/delete/:id',deleteUser);
+
+
+  
 router.post(
     "/auth/signup",
-    validateRequestBody(
-      z.object({
-        mail: z.string().email(),
-        mdp: z.string().min(6),
-        // Add other required fields for signup
-      })
-    ),
-    async (req, res) => {
-      try {
-        const { mail, mdp , firstname , lastname , phoneNumber , latitude , longitude , address , profilPictureUrl , status } = req.body;
-  
-        // Check if user already exists with the given email
-        const existingUser = await getUserByEmail(mail);
-        if (existingUser) {
-          return res.status(400).json({ status: 400, message: "Email already exists" });
+    async (req , res)=>{
+    
+    const form = formidable({
+        multiples: false,
+        keepExtensions: true,
+        fields: ["firstname" , "lastname" , "phoneNumber" ,
+         "latitude" , 'longitude' , 'address' , 'mdp' , 'mail' , 'status'],
+
+        fileFilter: function(req, file, callback) {
+            if (!file.type.startsWith('image/')) {
+              return callback(new Error('Only image files are allowed!'));
+            }
+            callback(null, true);
         }
-  
-  
-        console.log(req.body)
-  
-        // Hash the password
-        const hashedPassword = await bcrypt.hash(mdp, 10);
-  
-        // Create user in the database
-        const newUser = await createUser({
-            firstname : firstname,
-            lastname : lastname,
-            phoneNumber : phoneNumber,
-            latitude : Number(latitude),
-            longitude : Number(longitude),
-            address  : address,
-            password : hashedPassword,
-            profilPictureUrl : profilPictureUrl,
-            email : mail,
-            status : status
-          // Add other fields for signup
-        });
-  
-        res.status(201).json({ status: 201, message: "User created successfully", data: newUser });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ status: 500, message: "Internal Server Error" });
-      }
-    }
-  );
-  
+    });
+
+    form.parse(req, async (err, fields, files) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('An error occurred while uploading the user image.');
+            return;
+        }
+        try {
+            console.log(files);
+            const result = await cloudinary.v2.uploader.upload(files.image.filepath, {
+                resource_type: 'image',
+                folder: 'users_images',
+            });
+            console.log(result);
+
+            const {firstname , lastname , phoneNumber ,
+            latitude , longitude , address , mdp , mail , status} = fields;
+            console.log(fields);
+
+            const hashedPassword = await bcrypt.hash(mdp, 10);
+
+            const user = await prisma.user.create({
+                data:{
+                    firstname : firstname,
+                    lastname : lastname,
+                    phoneNumber : phoneNumber,
+                    latitude : Number(latitude),
+                    longitude : Number(longitude),
+                    address : address,
+                    password : hashedPassword,
+                    profilPictureUrl :result.secure_url,
+                    email : mail,
+                    status : Number(status)
+                }
+                
+            });
+                    res.status(201).json(user);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send('An error occurred while uploading the dish image.');
+        }
+    });
+})
 
 
 
@@ -155,6 +194,13 @@ router.post(
       res.status(500).json({ status: 500, message: "Internal Server Error" });
     }
   });
+
+
+
+
+
+
+
   
   export default router;
   
