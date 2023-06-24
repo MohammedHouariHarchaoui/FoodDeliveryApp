@@ -19,22 +19,23 @@ export const getDishes = async (req , res)=>{
     }
 }
 
-export const getDishById = async (req , res)=>{
+export const getDishById = async (req, res) => {
     try {
-        const response = await prisma.dish.findUnique({
-            where:{
-                id : Number(req.params.id)
-            }
-        });
-        if (response) {
-            res.status(200).json(response);
-        } else {
-            res.status(404).json({ msg: "Dish not found" });
-        }
+      const response = await prisma.dish.findMany({
+        where: {
+          idRestaurant: Number(req.params.id),
+        },
+      });
+      if (response.length > 0) {
+        res.status(200).json(response);
+      } else {
+        res.status(404).json({ msg: "Dishes not found for the given restaurant ID" });
+      }
     } catch (error) {
-        res.status(500).json({msg : error.msg});
+      res.status(500).json({ msg: error.message });
     }
-}
+  };
+  
 
 export const createDish = async (req , res)=>{
     

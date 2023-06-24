@@ -67,6 +67,7 @@ model Restaurant {
   id              Int      @id @default(autoincrement())
   name            String   @unique @db.VarChar(120)
   description     String   @db.VarChar(500)
+  backGroundImageUrl String @db.VarChar(200)
   logoPictureUrl  String   @db.VarChar(200)
   latitude        Float
   longitude       Float
@@ -105,6 +106,7 @@ model Dish {
   id           Int          @id @default(autoincrement())
   idRestaurant Int
   price        Float
+  name         String
   category     FoodCategory
   description  String       @db.VarChar(500)
   image        String       @db.VarChar(200)
@@ -122,14 +124,17 @@ model Review {
 
 enum OrderStatus {
   PENDING
-  DELIVERED
-  CANCELED
+  PREPARING
+  DELIVERING
+  ARRIVED
 }
 
 model Order {
   id            Int         @id @default(autoincrement())
+  idUser        Int
   latitudue     Float
   longitude     Float
+  address       String
   deliveryNote  String      @db.VarChar(500)
   idDeliveryMan Int
   status        OrderStatus
@@ -137,11 +142,11 @@ model Order {
 }
 
 model OrderItems {
+  id            Int         @id @default(autoincrement())
   idDish    Int
   idOrder   Int
   quantity  Int
   dishNote  String   @db.VarChar(500)
   createdAt DateTime @default(now())
 
-  @@id([idDish, idOrder])
 }

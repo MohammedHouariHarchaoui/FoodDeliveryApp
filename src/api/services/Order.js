@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client"
 
+
 const prisma = new PrismaClient();
 
 export const getOrders = async (req , res)=>{
@@ -28,23 +29,43 @@ export const getOrderById = async (req , res)=>{
     }
 }
 
-export const createOrder = async (req , res)=>{
-    const {latitudue , longitude , deliveryNote , idDeliveryMan , status} = req.body;
+
+export const createOrder = async (req, res) => {
+    const { idUser, address, deliveryNote, orderItems } = req.body;
     try {
-        const order = await prisma.order.create({
-            data:{
-                latitudue : Number(latitudue),
-                longitude : Number(longitude),
-                deliveryNote : deliveryNote,
-                idDeliveryMan : Number(idDeliveryMan),
-                status : status
-            }
+      const order = await prisma.order.create({
+        data: {
+          latitudue: 36.7050342,
+          longitude: 3.1713407,
+          idUser: Number(idUser),
+          address: address,
+          deliveryNote: deliveryNote,
+          idDeliveryMan: 1,
+          status: "PENDING",
+        },
+      });
+  
+      console.log(orderItems);
+  
+      for (const item of orderItems) {
+        const i = await prisma.orderItems.create({
+          data: {
+            idDish: Number(item.idDish),
+            idOrder: Number(order.id),
+            quantity: Number(item.quantity),
+            dishNote: item.dishNote,
+          },
         });
-        res.status(201).json(order);
+        console.log(i);
+      }
+  
+      res.status(201).json(order);
     } catch (error) {
-        res.status(400).json({msg : error.msg});
+      res.status(400).json({ msg: error.message });
     }
-}
+  };
+  
+
 
 export const updateOrder = async (req , res)=>{
     const {latitudue , longitude , deliveryNote , idDeliveryMan , status} = req.body;
